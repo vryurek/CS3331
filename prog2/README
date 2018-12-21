@@ -1,0 +1,52 @@
+/* ----------------------------------------------------------- */
+/* NAME : Veronica Yurek                     User ID: vryurek  */
+/* DUE DATE : 10/19/2018                                       */
+/* PROGRAM ASSIGNMENT #2                                       */
+/* FILE NAME : README                                          */
+/* ----------------------------------------------------------- */
+
+1. The logic of my Program:
+    The main.c file receives input (array size and the array), then creates
+    shared memory for the output (sorted) array, and shared memory for a
+    temporary array that merge.c will use for merging. The process then forks,
+    launching merge.c with execvp. Merge.c then acceses the memory with
+    the memory ids and recursively forks the array in sorted halves using
+    execvp until arrays of size two are reached. Then the processes wait for
+    their children to complete and then creates a process for each array
+    element. Each process then merges using a modified binary search (storing
+    the new placement in the temp shared array), then copies the elements in
+    the temp array to the output shared array in order to prevent overwriting
+    data.
+
+2. My program works because the implementation of mergesort involves splitting
+    an array into two independent halves recursively. This allows us to process
+    each half concurrently and merge them later. In this implementation, we use
+    a modified binary search to merge the halves back together.
+
+3. The shared memory output array is created in main.c and attached to both
+  main.c and merge.c (every time merge.c is executed). It stores the final
+  sorted output array. The shared memory temporary array (zArr) is created in
+  main.c and attached to both main.c and merge.c (every time merge.c is
+  executed). It functions as a temporary placeholder for the binary merge
+  portion of merge.c in order to prevent overwriting data in shared memory.
+
+4. Yes, there would have been a race condition had a temporary shared array not
+    been used. I discovered this in my own program, as I had a typo when
+    creating my temporary shared memory array and accidentally used the key
+    belonging to the shared output array. As a result, multiple processes of
+    merge.c attempted to access the final shared array while editing it,
+    thereby messing up my data.
+
+5. The assigned array entry should not be saved back to the given array in
+    binary merge because that would cause a race condition. Multiple processes
+    of merge.c would try to access it for comparisons and write to it, which
+    causes unpredictable output.
+
+6. My temporary array is allocated memory once in main.c, then is attached to
+    each process of merge.c at the beginning of merge.c. After the merge.c uses
+    it for binary merge, the temporary array is detached from each process in
+    the loop to prevent race conditions. Finally, it is terminated in main.c.
+
+7. Yes, we can use a check to see if there is a new value in the loop. If the
+   value is not new, that process waits until a new value is found, and then
+   continues executing in the loop (continues to fork()).
