@@ -1,0 +1,36 @@
+/* ----------------------------------------------------------- */
+/* NAME : Veronica Yurek                     User ID: vryurek  */
+/* DUE DATE : 11/02/2018                                       */
+/* PROGRAM ASSIGNMENT #3                                       */
+/* FILE NAME : README                                          */
+/* ----------------------------------------------------------- */
+
+1. There are no race conditions in this program because during each run,
+each thread accesses a different part of the global array. While the array
+itself is shared between threads and has the potential for race conditions,
+the program is written so that each thread accesses a different part of the
+array during a run.
+
+2. Base case: size of x[] = 1
+              k = log2(1) = 0
+              There are 0 runs, the prefix sum is x[0].
+   Assume that for some value k = log2(xSize) the prefix sum is computed
+   correctly. Prove that the above equation holds for k + 1.
+
+   k + 1 = log2(2 * xSize)
+   k + 1 = log2(2) + log2(xSize)
+   k + 1 = 1 + k                  using inductive hypothesis
+
+   At k iterations, the first element will just be copied to the array, but
+   the second (and so on until k) will have the previous elements added to it
+   using the algorithm. This will continue as long as the array size follows
+   the 2^k pattern. k + 1 conforms to this pattern, as given by the above
+   inductive proof.
+
+3. If the result was saved back x[i] to (no temporary 2D array B is used), then
+if runs overlap, they would overwrite the previous run in an unpredictable
+way due to race conditions, causing incorrect calculation of the prefix sum.
+
+4. Each of the n threads would finish its section for a run h, then move on
+to its section in run h + 1 while the rest of run h is still being completed.
+This would cut down on waiting for more threads to be created and joined.
