@@ -1,0 +1,31 @@
+// -----------------------------------------------------------
+// NAME : Veronica Yurek                     User ID: vryurek
+// DUE DATE : 11/16/2018
+// PROGRAM ASSIGNMENT #4
+// FILE NAME : README
+//
+// -----------------------------------------------------------
+
+Question 1:
+In order to prevent students from entering the room when the landlord was
+checking, I created a loop so that while the landlord is in the room
+(landlord = "in_room"), the student thread would repeatedly signal the
+Mutex semaphore and wait until the landlord was no longer in the room. This
+way, when the landlord signals the Mutex to force the students to leave, they
+keep looping and waiting to enter until he leaves.
+
+Question 2:
+In order to make sure the landlord stays until all the students leave, I
+ created a semaphore named Clear. After signaling the Mutex to force the
+ students to leave, he executes Clear.Wait(). Then when the last student leaves
+ the room when the landlord is in the room, he/she executes Clear.Signal() to
+ let the landlord know that the room is empty and he can leave.
+
+ Question 3:
+ To make the vacation message the last message, I created a semaphore called
+ Bed. When it is the landlord's last check, he executes Bed.Wait() k times
+ (k is the total number of students). Then, each student checks to see if
+ the landlord is retired by checking the bool variable 'isRetired'. If true,
+ he/she signals Bed and Exits(). After all student threads have terminated,
+  the landlord is able to continue and print the last statement before exiting.
+  The program then ends, and the vacation statement is the last statement.

@@ -1,0 +1,129 @@
+// -----------------------------------------------------------
+// NAME : Veronica Yurek                     User ID: vryurek
+// DUE DATE : 12/14/2018
+// PROGRAM ASSIGNMENT #6
+// FILE NAME : README
+// -----------------------------------------------------------
+
+Question 1: The logic of your PROGRAM
+	thread-main.cpp reads in the input, starts all the threads and channels,
+	 then displays the resulting matrices. The RowProcesser threads are the
+	 processors that are connected to the first column and the ColProcessor
+	 threads are the processors that are connected to the first row. After 
+	passing the data to the inner processors, they send -1 (EOD) and 
+	terminate. The inner processor threads then received the above and left
+	messages, then check if they both are -1. If they are, the EOD is passed
+	to the right and bottom if possible, the result is saved, and the thread
+	is terminated. Otherwise, the messages are simply passed if possible and 
+	the value of (above * left) is added to the local var number. 
+
+Question 2: Why does your program work?
+	My program works because each P (inner) thread has a local variable
+	number that is initially 0. After each pair of message passes that isn't
+	EOD, it adds the multiplication of it to this number. The repitition of 
+	this operation results in the computation of the dot product, which is 
+	how a matrix multiplication is calculated. This number is then stored 
+	in the global array matrix c.
+
+ Question 3: Meaning, use, and initial val of each variable
+	rChannels - the channels used to pass values to the right of a processor
+	dChannels - the channels used to pass values to the processor below
+	matrixA - the given A matrix
+	matrixB - the given B matrix
+	matrixC - A * B matix
+	in RowProcessor:
+		int id - the id of the row. Allows tracking of which row processor
+				is currently running for print statements
+		int aCols - set to the given number in the input file for the cols 
+				of matrix A. This is used to iterate through matrix A.
+		int number - the number to pass to an inner thread. This is A[i, 1],
+			A[i, 2], and so on.
+	in ColProcessor:
+		int id - the id of the column. Allows tracking of which col processor
+				is currently running for print statements
+		int bRows - set to the given number in the input file for the rows 
+				of matrix B. This is used to iterate through matrix B.
+		int number - the number to pass to an inner thread. This is B[1, i],
+				B[2, i], and so on.
+	in InnerProcess:
+		int rid - row id for the processor matrix. Used for print statements
+			and saving the result back to matrix C
+		int cid - col id for the processor matrix. Used for print statements 
+			and saving the result back to matrix C
+		int cCols - the number of columns in matrix C. Given by input file
+			(number of columns in B). Used to iterate through C and save the
+			result back.
+		int cRows - the number of rows in matrix C. Given by input file
+			(number of rows in A). Used to iterate through C and save the
+			result back.
+		int above - the value received from the above processor/thread. 
+			used to calculate the number (dot product) at that point in the 
+			matrix. If EOD, lets the thread know when to quit.
+		int left - the value received from the left processor/thread. 
+			used to calculate the number (dot product) at that point in the 
+			matrix. If EOD, lets the thread know when to quit.
+		int number - the dot product at the current point in calculation.
+			At EOD, this number is saved to matrix C. Initially zero, as 
+			this is a cumulative sum.
+
+Question 4: Why does thread Pi,j compute the inner (or dot) product of row i 
+			of matrix A and column j of matrix B correctly?
+	Each P (inner) thread has a local variable number that is initially 0. 
+	After each pair of message passes that isn't EOD, it adds the 
+	multiplication of those two numbers to this number. The repitition of 
+	this operation results in the computation of the dot product, as it takes
+	 the value from A and multiplies it with the value of B that are provided
+	 by the row and col processors respectively. This is how a matrix 
+	 multiplication is calculated. This number is then stored in the global 
+	 array matrix c.
+
+Question 5: Why are synchronous channels used rather than asynchronous 
+			channels? A rigorous reasoning is required.
+	Synchronous channels are used because the sender and the receiver must 
+	synchronize their activities. Using asynchronous would make the order in
+	which the messages are passed unpredictable and cause the dot product to
+	possibly be calculated incorrectly. Additionally, it could cause one EOD
+	to arrive before the other, which would require the inner processors to 
+	wait until it has both EOD's in order to terminate and save the result
+	back to matrix C.
+
+Question 6: Thread Pi,j terminates when it receives a EOD from its top and 
+			left neighbors. Does this thread termination follow a particular 
+			pattern? Draw a diagram of this termination pattern. Note that 
+			your diagram must be readable when it is printed.
+		The threads terminate in a diagonal pattern from the top left value:
+		1 P P P
+		P P P P
+		P P P P
+
+		1 2 P P
+		2 P P P
+		P P P P
+
+		1 2 3 P
+		2 3 P P
+		3 P P P
+
+		1 2 3 4
+		2 3 4 P
+		3 4 P P
+
+		1 2 3 4
+		2 3 4 5
+		3 4 5 P
+
+		1 2 3 4
+		2 3 4 5
+		3 4 5 6
+
+		P - running process
+		The numbers are the general order of termination. 
+		(ex. 1 finishes first)
+
+Question 7: Can a thread terminate once it receives a EOD from its left 
+			(or top) neighbor and still deliver correct results. Explain 
+			your answer as clearly as possible.
+		Yes, since the message passes are synchronized, once one EOD is 
+		received from the top or left, the other EOD has also been 
+		received. This causes the thread to save the correct value and 
+		then terminate.

@@ -1,0 +1,133 @@
+// -----------------------------------------------------------
+// NAME : Veronica Yurek                     User ID: vryurek
+// DUE DATE : 12/07/2018
+// PROGRAM ASSIGNMENT #5
+// FILE NAME : README
+//
+// -----------------------------------------------------------
+
+Question 1: The logic of your PROGRAM
+First, the boat, cannibal, and missionary threads are started. For as many
+boat crosses allowed, the boat thread checks if there is a safe combo of
+passengers waiting to cross. If so, the boat is ready and monitor
+procedure BoatReady() is called. It releases a safe combination of passengers
+ to cross. Then if the boat is loaded, boat thread calls the monitor procedure
+ BoatDone() when the crossing is over. This releases the three passengers and
+ the cycle restarts. On the last crossing, all the waiting cannibals and
+ missionaries are released so they can exit. Meanwhile, cannibals arrive
+ at the riverbank (CannibalArrives()). They then change the isValid flag to
+ true if their arrival makes a safe passenger combo available. Then they wait
+ to board. Once the boat signals that it's okay to board, they cross the river
+  and then wait to getoff. Once signalled by the boat, they get off and
+  magically begin the cycle again. The missionaries behave in the same way
+  (MissionaryArrives()).
+
+Question 2: Why does your program work?
+My program works due to the use of 3 condition variables (getOffBoat,
+misWaiting, canWaiting) and flag variables (isValid, loaded, canSail). Once
+a missionary or cannibal arrives, they check if their presence means that there
+ is now a safe passenger combo (change isValid to true) and call Wait()
+ (misWaiting or canWaiting respectively). This will let the Boat thread know
+ when it's safe to signal passengers to board. The boat then signals the safe
+ combination of passengers. The last boarding changes loaded to true to let the
+ boat know that it's safe to cross and they cross the river, calling
+ getOffBoat->Wait() to ensure they can't get off until the end. The passengers
+ update the isValid flag as they leave. Once the boat as finished crossing,
+ the boat thread signals getOffBoat so the passengers can leave and begin the
+ cycle again. At the last crossing, boat signals all the waiting mis/can and
+ changes canSail to false in order to allow all threads to exit safely.
+
+ Question 3:
+ Condition *misWaiting - condition used to control when missionaries can get
+      on the boat. Missionaries wait until the boat is ready, then they are
+      signaled.
+ Condition *canWaiting - condition used to control when cannibals can get
+      on the boat. Cannibals wait until the boat is ready, then they are
+      signaled.
+ Condition *getOffBoat; - condition used to control when passengers can get off
+       the boat. When the crossing is complete, the boat signals 3 times to
+       allow each passenger to get off.
+ int numMisWait - keeps count of the number of missionaries waiting on
+      shore. Initialized to 0, as there are none originally. This is used to
+      check for valid passenger combos and for signaling when to get on the
+      boat.
+ int numCanWait - keeps count of the number of cannibals waiting on
+      shore. Initialized to 0, as there are none originally. This is used to
+      check for valid passenger combos and for signaling when to get on the
+      boat.
+ int totalCross - keeps track of the total allowed crossings. Initialized to
+      the third command line arg. This allows the boat to know when it is time
+      to close the river and exit.
+ int curNumCross - keeps track of the current river crossing number. Initially
+      0, as no crossings have been made yet.
+ int numPass - keeps track of the number of passengers, initially 0. This
+      allows the boat to know when it is loaded and can cross.
+ int *passIds - This array holds the list of passenger ids. Initially -1 since
+      no id will be negative. This is used for print statements.
+ int *passTypes - This array holds the list of passenger types (M (1) or C (0))
+       This is used for printing.
+ bool isValid - flag to determine whether there is a valid passenger combo
+      waiting to board. Initially false, since there are none waiting
+      originally. The boat thread uses this to ensure it does not take off with
+      an unsafe load
+ bool loaded - flag to determine whether the boat has three passengers,
+      initially false, as there are no passengers.
+ bool canSail - flag to determine whether it is the last crossing. Initially
+      true, as the boat can continue to sail. At the last crossing, this
+      becomes false so that threads can check it and exit safely.
+
+Question 4: Every boat load has exactly three persons and is safe
+      Safety is guaranteed through the use of the isValid flag and the counters
+       numMisWait and numCanWait. In CannibalArrives() and MissionaryArrives(),
+        each new arrival checks the waiting people on the shore to see if there
+        is a valid and safe passenger combo available. They then wait
+        (misWaiting->Wait() or canWaiting->Wait()) until the boat signals
+        exactly 3 times for a safe combo in BoatReady(): either
+        3 misWaiting->Signal(), 3 canWaiting->Signal, or 2 misWaiting->Signal()
+         and 1 canWaiting->Signal() (which combo is determined arbitrarily
+         using who is available ). In this way, only 3 safe passengers are
+         released each time.
+
+Question 5: State your policy of assembling a safe boat load clearly
+      Safety is guaranteed through the use of the isValid flag and the counters
+      numMisWait and numCanWait. In CannibalArrives() and MissionaryArrives(),
+      each new arrival checks the waiting people on the shore to see if there
+      is a valid and safe passenger combo available. They then wait
+      (misWaiting->Wait() or canWaiting->Wait()) until the boat signals
+      exactly 3 times for a safe combo in BoatReady(): either
+      3 misWaiting->Signal(), 3 canWaiting->Signal, or 2 misWaiting->Signal()
+      and 1 canWaiting->Signal() (which combo is determined arbitrarily
+      using who is available ). Once the 3 board, they check to see if their
+      departure caused a valid (safe) combo to become unavailable. If so, the
+      isValid flag is changed to false. BoatReady() is only called when isValid
+       is true. In this way, only 3 safe passengers are released each time.
+
+Question 6: Why does the monitor guarantee that:
+      1. No one can get off the boat before a crossing completes.
+          This is guaranteed through the use of the getOffBoat condition var.
+          When a missionary or cannibal boards in CannibalArrives() or
+          MissionaryArrives(), they call Wait() on this var so that they are
+          blocked until the boat signals. On completion, the boat calls
+          BoatDone(), which signals getOffBoat three times, releasing the
+          passengers safely.
+      2. While the boat is crossing the river, no can jump on and get off the
+          boat.
+          No one can get off due to getOffBoat as mentioned above, but
+          missionaries and cannibals are blocked from boarding due to the
+          condition vars misWaiting and canWaiting respectively. They call
+          Wait() on these variables in CannibalArrives() or MissionaryArrives()
+          , and are only released when boat signals them in BoatReady().
+      3. Everyone on the boat is registered properly.
+          Cannibals and Missionaries cannot even begin the procedure to get on
+          the boat until they have registered, as this procedure is in
+          CannibalArrives() and MissionaryArrives(). This makes it so that
+          anyone who wants to get on must first call these monitor procedures
+          and register.
+      4. No one who is on the boat for a crossing can come back and register
+        for another crossing until the current boat ride completes.
+          In order to cycle through registration again, a passenger must first
+          get off the boat (This is done using getOffBoat as mentioned above).
+          Once the boat is empty, it magically appears back on shore to do
+          another crossing and is complete. getOffBoat prevents a passenger
+          from registering twice for the same ride due to the logic described
+          in (1).
