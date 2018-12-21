@@ -1,0 +1,66 @@
+/* ----------------------------------------------------------- */
+/* NAME : Veronica Yurek                     User ID: vryurek  */
+/* DUE DATE : 09/29/2018                                       */
+/* PROGRAM ASSIGNMENT #1                                       */
+/* FILE NAME : README                                          */
+/* ----------------------------------------------------------- */
+
+Question 1:
+             A
+             |
+             B
+             |
+             C
+             |
+             D
+
+    Four processes are created (including initial parent A). First, Process A
+    completes the first fork() and creates child process B. A then immediately
+    breaks out of the loop and prints the statement (fork() returns the pid of
+    process B which evaluates to true). Process B runs (i == 1) and forks and
+    breaks immediately since fork() returns a positive (C's pid), creating
+    child process C. Process C runs (i == 2), forks and breaks immediately
+    just like process C, creating process D. At this point, i == 3, so D does
+    not run through the loop and simply prints the statement.
+
+Question 2:
+               A
+        /   |    |    \
+        B   C    D     E
+
+    Five processes are created (including initial parent A). First, Process A
+    completes the first fork() and creates child process B. Since fork()
+    returns a positive value (B's pid). Process A goes through the loop again
+    and forks until the loop ends with 4 iterations. This creates four
+    children of A in total: B, C, D, and E. A then prints the statement and
+    exits. When each child process goes through the loop, fork() returns 0,
+    causing them to break the loop and print the statement without creating
+    any child processes.
+
+Question 3:
+               A
+           /   |   \
+          B    C     D
+       /  |    |
+      E   F    G
+      |
+      H
+
+      Eight processes are created (including initial parent A). First, Process
+      A completes the first fork() and creates child process B. Since the fork
+      was successful, both A and B complete the 2nd iteration and create child
+      processes E (child of B) and C (child of A). The forks were successful,
+      so processes A, B, C, and E complete the 3rd iteration of the loop, so
+      they each fork and create child processes D, F, G, and H respectively.
+      At this point, the loop ends and they print the printf statements.
+
+Question 4:
+
+      This distribution is called "normal distribution". I believe the
+      histogram represents the normal distribution because the definition of
+      a normal distribution is a bell-shaped curve that represents the
+      probability of many random variables. In the simple pinball process, I
+      generated and graph many random variables, which is consistent with the
+      definition of a normal curve. Additionally, the more balls that are
+      dropped in the process (more random variables) the more the histogram
+      represents a bell-shaped curve.
